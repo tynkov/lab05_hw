@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(BUILD_TESTS "Build tests" OFF)
 
-project(banking)
+project(lab05)
 
 add_subdirectory(banking)
 

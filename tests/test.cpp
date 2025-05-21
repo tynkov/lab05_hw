@@ -21,20 +21,19 @@ public:
 TEST(Account, Banking){
     MockAccount test(0,0);
     
-    ASSERT_EQ(test.GetBalance(), 0);
+    EXPECT_EQ(test.Account::GetBalance(), 0);
     
-    ASSERT_THROW(test.ChangeBalance(100), std::runtime_error);
+    EXPECT_THROW(test.Account::ChangeBalance(100), std::runtime_error);
     
     test.Lock();
+    EXPECT_NO_THROW(test.Account::ChangeBalance(100));
     
-    ASSERT_NO_THROW(test.ChangeBalance(100));
-    
-    ASSERT_EQ(test.GetBalance(), 100);
+    EXPECT_EQ(test.Account::GetBalance(), 100);
 
-    ASSERT_THROW(test.Lock(), std::runtime_error);
+    EXPECT_THROW(test.Lock(), std::runtime_error);
 
     test.Unlock();
-    ASSERT_THROW(test.ChangeBalance(100), std::runtime_error);
+    EXPECT_THROW(test.Account::ChangeBalance(100), std::runtime_error);
 }
 
 TEST(Transaction, Banking){
@@ -43,19 +42,19 @@ TEST(Transaction, Banking){
     MockAccount John(893, init_balance), Harry(1365, init_balance);
     MockTransaction payment_test;
 
-    ASSERT_EQ(payment_test.fee(), 1);
+    EXPECT_EQ(payment_test.fee(), 1);
     payment_test.set_fee(init_fee);
-    ASSERT_EQ(payment_test.fee(), init_fee);
+    EXPECT_EQ(payment_test.fee(), init_fee);
 
-    ASSERT_THROW(payment_test.Make(John, John, 1000), std::logic_error);
-    ASSERT_THROW(payment_test.Make(John, Harry, 0), std::logic_error);
-    ASSERT_THROW(payment_test.Make(John, Harry, -50), std::invalid_argument);
+    EXPECT_THROW(payment_test.Make(John, John, 1000), std::logic_error);
+    EXPECT_THROW(payment_test.Make(John, Harry, 0), std::logic_error);
+    EXPECT_THROW(payment_test.Make(John, Harry, -50), std::invalid_argument);
 
     John.Lock();
-    ASSERT_THROW(payment_test.Make(John, Harry, 1000), std::runtime_error);
+    EXPECT_THROW(payment_test.Make(John, Harry, 1000), std::runtime_error);
     John.Unlock();
 
-    ASSERT_EQ(payment_test.Make(John, Harry, 1000), true);
-    ASSERT_EQ(John.GetBalance(), init_balance-1000-init_fee);
-    ASSERT_EQ(Harry.GetBalance(), init_balance+1000);
+    EXPECT_EQ(payment_test.Make(John, Harry, 1000), true);
+    EXPECT_EQ(John.GetBalance(), init_balance-1000-init_fee);
+    EXPECT_EQ(Harry.GetBalance(), init_balance+1000);
 }
