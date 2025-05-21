@@ -22,7 +22,7 @@ target_include_directories(banking PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
     * Покрытие кода должно составлять 100%.
 ```cpp
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "gmock/gmock.h"
 #include <Account.h>
 #include <Transaction.h>
 
