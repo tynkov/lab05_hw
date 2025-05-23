@@ -47,28 +47,28 @@ TEST(Account, GetBalanceValue) {
 
 TEST(Transaction, SameAccount) {
 	MockAccount account(1, 1000);
-	TestTransaction tx;
+	MockTransaction tx;
 	EXPECT_THROW(tx.Make(account, account, 100), std::logic_error);
 }
 
 TEST(Transaction, NegativeSum) {
 	MockAccount from(1, 1000);
 	MockAccount to(2, 1000);
-	TestTransaction tx;
+	MockTransaction tx;
 	EXPECT_THROW(tx.Make(from, to, -100), std::invalid_argument);
 }
 
 TEST(Transaction, SmallSum) {
 	MockAccount from(1, 1000);
 	MockAccount to(2, 1000);
-	TestTransaction tx;
+	MockTransaction tx;
 	EXPECT_THROW(tx.Make(from, to, 50), std::logic_error);
 }
 
 TEST(Transaction, HighFee) {
 	MockAccount from(1, 1000);
 	MockAccount to(2, 1000);
-	TestTransaction tx;
+	MockTransaction tx;
 	tx.set_fee(100);
 
 	EXPECT_FALSE(tx.Make(from, to, 100));
@@ -77,7 +77,7 @@ TEST(Transaction, HighFee) {
 TEST(Transaction, Successful) {
 	MockAccount from(1, 1000);
 	MockAccount to(2, 1000);
-	TestTransaction tx;
+	MockTransaction tx;
 
 	tx.set_fee(10);
 
@@ -104,7 +104,7 @@ I		nSequence s;
 TEST(Transaction, NotEnoughFunds) {
 	MockAccount from(1, 1000);
 	MockAccount to(2, 1000);
-	TestTransaction tx;
+	MockTransaction tx;
 
 	tx.set_fee(10);
 
