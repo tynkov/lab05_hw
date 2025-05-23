@@ -88,7 +88,7 @@ TEST(Transaction, Successful) {
 		EXPECT_CALL(to, GetBalance()).WillOnce(Return(1200));
 		EXPECT_CALL(to, ChangeBalance(-210));
 		EXPECT_CALL(from, GetBalance()).WillRepeatedly(Return(1000));
-    
+
 		EXPECT_CALL(tx, SaveToDataBase(_, _, 200));
 	}
 
