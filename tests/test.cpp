@@ -78,12 +78,9 @@ TEST(Transaction, Successful) {
 	MockAccount from(1, 1000);
 	MockAccount to(2, 1000);
 	MockTransaction tx;
-
 	tx.set_fee(10);
 
 	{
-		InSequence s;
-
 		EXPECT_CALL(from, Lock());
 		EXPECT_CALL(to, Lock());
 
@@ -91,12 +88,12 @@ TEST(Transaction, Successful) {
 		EXPECT_CALL(to, GetBalance()).WillOnce(Return(1200));
 		EXPECT_CALL(to, ChangeBalance(-210));
 		EXPECT_CALL(from, GetBalance()).WillRepeatedly(Return(1000));
-
-		EXPECT_CALL(from, Unlock());
-		EXPECT_CALL(to, Unlock());
-
+    
 		EXPECT_CALL(tx, SaveToDataBase(_, _, 200));
 	}
+
+	EXPECT_CALL(from, Unlock());
+	EXPECT_CALL(to, Unlock());
 
 	EXPECT_TRUE(tx.Make(from, to, 200));
 }
@@ -105,25 +102,21 @@ TEST(Transaction, NotEnoughFunds) {
 	MockAccount from(1, 1000);
 	MockAccount to(2, 1000);
 	MockTransaction tx;
-
 	tx.set_fee(10);
 
 	{
-		InSequence s;
-
 		EXPECT_CALL(from, Lock());
 		EXPECT_CALL(to, Lock());
 
 		EXPECT_CALL(to, ChangeBalance(100));
 		EXPECT_CALL(to, GetBalance()).WillOnce(Return(100));
-
 		EXPECT_CALL(to, ChangeBalance(-100));
-
-		EXPECT_CALL(from, Unlock());
-		EXPECT_CALL(to, Unlock());
 
 		EXPECT_CALL(tx, SaveToDataBase(_, _, 100));
 	}
+
+	EXPECT_CALL(from, Unlock());
+	EXPECT_CALL(to, Unlock());
 
 	EXPECT_FALSE(tx.Make(from, to, 100));
 }
