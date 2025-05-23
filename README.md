@@ -21,65 +21,134 @@ target_include_directories(banking PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
     * Используйте mock-объекты.
     * Покрытие кода должно составлять 100%.
 ```cpp
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <Account.h>
 #include <Transaction.h>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
-class MockAccount: public Account{
-public:
-    MockAccount(int id, int balance): Account(id, balance){}
-    MOCK_METHOD(int, GetBalance, (), (const, override)); 
-    MOCK_METHOD(void, ChangeBalance, (int diff), (override)); 
-    MOCK_METHOD(void, Lock, (), (override)); 
-    MOCK_METHOD(void, Unlock, (), (override)); 
+using ::testing::_;
+using ::testing::Return;
+using ::testing::InSequence;
+using ::testing::Throw;
+
+class MockAccount : public Account {
+ public:
+  MockAccount(int id, int balance) : Account(id, balance) {}
+
+  MOCK_METHOD(int, GetBalance, (), (const, override));
+  MOCK_METHOD(void, ChangeBalance, (int), (override));
+  MOCK_METHOD(void, Lock, (), (override));
+  MOCK_METHOD(void, Unlock, (), (override));
 };
 
-class MockTransaction: public Transaction{
-public:
-    MOCK_METHOD(void, SaveToDataBase, (Account& from, Account& to, int sum), (override));
+class MockTransaction : public Transaction {
+ public:
+  MOCK_METHOD(void, SaveToDataBase, (Account&, Account&, int), (override));
 };
 
-
-TEST(Account, Banking){
-    MockAccount test(0,0);
-    
-    EXPECT_EQ(test.Account::GetBalance(), 0);
-    
-    EXPECT_THROW(test.Account::ChangeBalance(100), std::runtime_error);
-    
-    test.Lock();
-    EXPECT_NO_THROW(test.Account::ChangeBalance(100));
-    
-    EXPECT_EQ(test.Account::GetBalance(), 100);
-
-    EXPECT_THROW(test.Lock(), std::runtime_error);
-
-    test.Unlock();
-    EXPECT_THROW(test.Account::ChangeBalance(100), std::runtime_error);
+TEST(Account, ChangeBalanceWOLock) {
+  Account account(1, 100);
+  EXPECT_THROW(account.ChangeBalance(10), std::runtime_error);
 }
 
-TEST(Transaction, Banking){
-    const size_t init_balance = 10000, init_fee = 100;
-    
-    MockAccount John(893, init_balance), Harry(1365, init_balance);
-    MockTransaction payment_test;
+TEST(Account, LockUnlock) {
+  Account account(1, 100);
 
-    EXPECT_EQ(payment_test.fee(), 1);
-    payment_test.set_fee(init_fee);
-    EXPECT_EQ(payment_test.fee(), init_fee);
+  account.Lock();
+  EXPECT_THROW(account.Lock(), std::runtime_error);
+  account.Unlock();
+  EXPECT_NO_THROW(account.Lock());
+}
 
-    EXPECT_THROW(payment_test.Make(John, John, 1000), std::logic_error);
-    EXPECT_THROW(payment_test.Make(John, Harry, 0), std::logic_error);
-    EXPECT_THROW(payment_test.Make(John, Harry, -50), std::invalid_argument);
+TEST(Account, GetBalanceValue) {
+  Account account(1, 150);
+  account.Lock();
+  account.ChangeBalance(-50);
+  account.Unlock();
+  EXPECT_EQ(account.GetBalance(), 100);
+}
 
-    John.Lock();
-    EXPECT_THROW(payment_test.Make(John, Harry, 1000), std::runtime_error);
-    John.Unlock();
+TEST(Transaction, SameAccount) {
+  MockAccount account(1, 1000);
+  TestTransaction tx;
+  EXPECT_THROW(tx.Make(account, account, 100), std::logic_error);
+}
 
-    EXPECT_EQ(payment_test.Make(John, Harry, 1000), true);
-    EXPECT_EQ(John.GetBalance(), init_balance-1000-init_fee);
-    EXPECT_EQ(Harry.GetBalance(), init_balance+1000);
+TEST(Transaction, NegativeSum) {
+  MockAccount from(1, 1000);
+  MockAccount to(2, 1000);
+  TestTransaction tx;
+  EXPECT_THROW(tx.Make(from, to, -100), std::invalid_argument);
+}
+
+TEST(Transaction, SmallSum) {
+  MockAccount from(1, 1000);
+  MockAccount to(2, 1000);
+  TestTransaction tx;
+  EXPECT_THROW(tx.Make(from, to, 50), std::logic_error);
+}
+
+TEST(Transaction, HighFee) {
+  MockAccount from(1, 1000);
+  MockAccount to(2, 1000);
+  TestTransaction tx;
+  tx.set_fee(100);
+
+  EXPECT_FALSE(tx.Make(from, to, 100));
+}
+
+TEST(Transaction, Successful) {
+  MockAccount from(1, 1000);
+  MockAccount to(2, 1000);
+  TestTransaction tx;
+
+  tx.set_fee(10);
+
+  {
+    InSequence s;
+
+    EXPECT_CALL(from, Lock());
+    EXPECT_CALL(to, Lock());
+
+    EXPECT_CALL(to, ChangeBalance(200));
+    EXPECT_CALL(to, GetBalance()).WillOnce(Return(1200));
+    EXPECT_CALL(to, ChangeBalance(-210));
+    EXPECT_CALL(from, GetBalance()).WillRepeatedly(Return(1000));
+
+    EXPECT_CALL(from, Unlock());
+    EXPECT_CALL(to, Unlock());
+
+    EXPECT_CALL(tx, SaveToDataBase(_, _, 200));
+  }
+
+  EXPECT_TRUE(tx.Make(from, to, 200));
+}
+
+TEST(Transaction, NotEnoughFunds) {
+  MockAccount from(1, 1000);
+  MockAccount to(2, 1000);
+  TestTransaction tx;
+
+  tx.set_fee(10);
+
+  {
+    InSequence s;
+
+    EXPECT_CALL(from, Lock());
+    EXPECT_CALL(to, Lock());
+
+    EXPECT_CALL(to, ChangeBalance(100));
+    EXPECT_CALL(to, GetBalance()).WillOnce(Return(100));
+
+    EXPECT_CALL(to, ChangeBalance(-100));
+
+    EXPECT_CALL(from, Unlock());
+    EXPECT_CALL(to, Unlock());
+
+    EXPECT_CALL(tx, SaveToDataBase(_, _, 100));
+  }
+
+  EXPECT_FALSE(tx.Make(from, to, 100));
 }
 ```
 
