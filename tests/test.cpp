@@ -82,7 +82,7 @@ TEST(Transaction, Successful) {
 	tx.set_fee(10);
 
 	{
-I		nSequence s;
+		InSequence s;
 
 		EXPECT_CALL(from, Lock());
 		EXPECT_CALL(to, Lock());
