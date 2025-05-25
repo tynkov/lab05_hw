@@ -203,7 +203,50 @@ if(BUILD_TESTS)
 endif()
 ```
 4. Настройте [Coveralls.io](https://coveralls.io/).
+```yml
+name: CI with gtest and lcov
 
+on:
+ push:
+  branches: [main]
+ pull_request:
+  branches: [main]
+
+jobs:
+ build:
+
+  runs-on: ubuntu-latest
+
+  steps:
+  - uses: actions/checkout@v4
+
+  - name: Adding gtest
+    run: git clone https://github.com/google/googletest.git third-party/gtest
+
+  - name: Install lcov
+    run: sudo apt-get install -y lcov
+
+  - name: Config banking with tests
+    run: cmake -H. -B ${{github.workspace}}/build -DBUILD_TESTS=ON
+
+  - name: Build banking
+    run: cmake --build ${{github.workspace}}/build
+
+  - name: Run tests
+    run: build/check
+
+  - name: Measure coverage
+    run: lcov -c -d build/CMakeFiles/banking.dir/banking/ --include *.cpp --output-file .coverage/lcov.info
+
+  - name: Upload to coveralls.io
+    uses: coverallsapp/github-action@v2
+    with:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+CMakeLists.txt
+```cmake
+
+```
 ## Links
 
 - [C++ CI: Travis, CMake, GTest, Coveralls & Appveyor](http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/)
