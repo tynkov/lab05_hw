@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(BUILD_TESTS "Build tests" OFF)
-option(CODE_COVERAGE "Enable coverage reporting" ON)
+option(CODE_COVERAGE "Enable coverage reporting" OFF)
 
 project(lab05)
 

@@ -21,7 +21,7 @@ jobs:
     run: sudo apt-get install -y lcov
 
   - name: Config banking with tests
-    run: cmake -H. -B ${{github.workspace}}/build -DBUILD_TESTS=ON
+    run: cmake -H . -B ${{github.workspace}}/build -DBUILD_TESTS=ON -DCODE_COVERAGE=ON
 
   - name: Build banking
     run: cmake --build ${{github.workspace}}/build
