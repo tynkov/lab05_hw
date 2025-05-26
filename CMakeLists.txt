@@ -21,4 +21,5 @@ endif()
 
 if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(check PRIVATE --coverage)
+  target_link_opitons(check PRIVATE --coverage)
 endif()
