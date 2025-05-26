@@ -20,7 +20,5 @@ if(BUILD_TESTS)
 endif()
 
 if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-  message(STATUS "Building with code coverage enabled")
-  add_compile_options(--coverage)
-  add_link_options(--coverage)
+  target_compile_options(check PRIVATE --coverage)
 endif()

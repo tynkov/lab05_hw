@@ -17,8 +17,8 @@ jobs:
   - name: Adding gtest
     run: git clone https://github.com/google/googletest.git third-party/gtest
 
-  - name: Install lcov
-    run: sudo apt-get install -y lcov
+  - name: Install cpp-coveralls
+    run: pip install cpp-coveralls
 
   - name: Config banking with tests
     run: cmake -H. -B${{github.workspace}}/build -DBUILD_TESTS=ON -DCODE_COVERAGE=ON
@@ -30,9 +30,9 @@ jobs:
     run: build/check
 
   - name: Measure coverage
-    run: lcov -c -d build --include *.cpp --output-file coverage.info
+    env:
+      COVERALLS_REPO_TOKEN: ${{ github.token }}
+    run: |
+      build/check --enable-gcov
+      coveralls -r build
 
-  - name: Upload to coveralls.io
-    uses: coverallsapp/github-action@v2
-    with:
-      github-token: ${{ secrets.GITHUB_TOKEN }}
