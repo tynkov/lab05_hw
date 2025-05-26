@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+]cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -21,5 +21,5 @@ endif()
 
 if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(check PRIVATE --coverage)
-  target_link_opitons(check PRIVATE --coverage)
+  target_link_options(check PRIVATE --coverage)
 endif()
