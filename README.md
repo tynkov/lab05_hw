@@ -223,35 +223,32 @@ jobs:
   - name: Adding gtest
     run: git clone https://github.com/google/googletest.git third-party/gtest
 
-  - name: Install lcov
-    run: sudo apt-get install -y lcov
+  - name: Install cpp-coveralls
+    run: pip install cpp-coveralls
 
   - name: Config banking with tests
-    run: cmake -H. -B ${{github.workspace}}/build -DBUILD_TESTS=ON
+    run: cmake -H. -B${{github.workspace}}/build -DBUILD_TESTS=ON -DCODE_COVERAGE=ON
 
   - name: Build banking
     run: cmake --build ${{github.workspace}}/build
 
   - name: Run tests
-    run: build/check
+    run: build/check --enable-gcov
 
   - name: Measure coverage
-    run: lcov -c -d build/CMakeFiles/banking.dir/banking/ --include *.cpp --output-file .coverage/lcov.info
-
-  - name: Upload to coveralls.io
-    uses: coverallsapp/github-action@v2
-    with:
-      github-token: ${{ secrets.GITHUB_TOKEN }}
+    env:
+      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+    run: coveralls -r build
 ```
 CMakeLists.txt
 ```cmake
-make_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(BUILD_TESTS "Build tests" OFF)
-option(CODE_COVERAGE "Enable coverage reporting" ON)
+option(CODE_COVERAGE "Enable coverage reporting" OFF)
 
 project(lab05)
 
@@ -267,9 +264,8 @@ if(BUILD_TESTS)
 endif()
 
 if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-  message(STATUS "Building with code coverage enabled")
-  add_compile_options(--coverage)
-  add_link_options(--coverage)
+  target_compile_options(check PRIVATE --coverage)
+  target_link_options(check PRIVATE --coverage)
 endif()
 ```
 ## Links

@@ -27,12 +27,10 @@ jobs:
     run: cmake --build ${{github.workspace}}/build
 
   - name: Run tests
-    run: build/check
+    run: build/check --enable-gcov
 
   - name: Measure coverage
     env:
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-    run: |
-      build/check --enable-gcov
-      coveralls -r build
+    run: coveralls -r build
 
