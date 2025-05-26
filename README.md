@@ -202,7 +202,7 @@ if(BUILD_TESTS)
   add_test(NAME check COMMAND check)
 endif()
 ```
-4. Настройте [Coveralls.io](https://coveralls.io/).
+4. Настройте [Coveralls.io](https://coveralls.io/): [![Coverage Status](https://coveralls.io/repos/github/tynkov/lab05_hw/badge.svg?branch=main)](https://coveralls.io/github/tynkov/lab05_hw?branch=main)
 ```yml
 name: CI with gtest and lcov
 
